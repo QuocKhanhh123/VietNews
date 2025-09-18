@@ -65,7 +65,18 @@ export default function NewsDetailPage({ params }: NewsDetailPageProps) {
 
       const data: ArticleDetail = await response.json()
       console.log('Received data:', data) // Debug log
-      setArticle(data)
+      
+      // Ensure all required fields exist
+      const completeArticle = {
+        ...data,
+        content: data.content || '',
+        excerpt: data.excerpt || data.content?.substring(0, 200) + '...' || '',
+        imageUrl: data.imageUrl || '/placeholder.jpg',
+        tags: data.tags || [],
+        views: data.views || 0
+      }
+      
+      setArticle(completeArticle)
 
     } catch (err) {
       console.error('Error fetching article:', err)
@@ -218,14 +229,22 @@ export default function NewsDetailPage({ params }: NewsDetailPageProps) {
           </div>
 
           {/* Article Content */}
-          <div
-            className="prose prose-lg max-w-none mb-8"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-            style={{
-              lineHeight: "1.7",
-              fontSize: "18px",
-            }}
-          />
+          <div className="mb-8">
+            {article.content ? (
+              <div
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+                style={{
+                  lineHeight: "1.7",
+                  fontSize: "18px",
+                }}
+              />
+            ) : (
+              <div className="text-gray-600 text-lg leading-relaxed">
+                {article.excerpt}
+              </div>
+            )}
+          </div>
 
           {/* Tags */}
           {article.tags && article.tags.length > 0 && (

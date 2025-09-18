@@ -17,6 +17,9 @@ interface ArticleData {
   views: number
   tags: string[]
   slug?: string
+  categoryName?: string
+  categorySlug?: string
+  // Transformed fields for UI
   id?: string
   excerpt?: string
   imageUrl?: string
@@ -26,6 +29,7 @@ interface ArticleData {
 }
 
 interface ArticlesApiResponse {
+  success: boolean
   data: ArticleData[]
 }
 
@@ -39,18 +43,21 @@ export function NewsGrid() {
       .then(res => res.json())
       .then((response: ArticlesApiResponse) => {
         console.log('API Response:', response);
-        // Transform data từ MongoDB format sang UI format
-        const transformedArticles = (response.data || []).map(article => ({
-          ...article,
-          id: article._id,
-          excerpt: article.shortDescription || (article.content ? article.content.substring(0, 150) + '...' : ''),
-          imageUrl: article.coverImageUrl || '/placeholder.jpg',
-          category: 'Tin tức', // Có thể join với categories sau
-          author: 'Admin',
-          publishedAt: formatTimeAgo(article.publicationDate),
-          slug: article.slug || article.title?.toLowerCase().replace(/\s+/g, '-') || ''
-        }));
-        setArticles(transformedArticles);
+        
+        if (response.success && response.data) {
+          // Transform data từ MongoDB format sang UI format
+          const transformedArticles = response.data.map(article => ({
+            ...article,
+            id: article._id,
+            excerpt: article.shortDescription || (article.content ? article.content.substring(0, 150) + '...' : ''),
+            imageUrl: article.coverImageUrl || '/placeholder.jpg',
+            category: article.categoryName || 'Tin tức', // Sử dụng categoryName từ API
+            author: 'Admin',
+            publishedAt: formatTimeAgo(article.publicationDate),
+            slug: article.slug || article.title?.toLowerCase().replace(/\s+/g, '-') || ''
+          }));
+          setArticles(transformedArticles);
+        }
         setLoading(false);
       })
       .catch(error => {

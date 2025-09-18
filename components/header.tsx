@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Search, Menu, User, PenTool } from "lucide-react"
+import { Search, Menu, User, PenTool, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -17,20 +17,37 @@ import {
 } from "@/components/ui/navigation-menu"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
-const categories = [
-  { name: "Thời sự", href: "/category/thoi-su" },
-  { name: "Kinh tế", href: "/category/kinh-te" },
-  { name: "Thể thao", href: "/category/the-thao" },
-  { name: "Giải trí", href: "/category/giai-tri" },
-  { name: "Công nghệ", href: "/category/cong-nghe" },
-  { name: "Sức khỏe", href: "/category/suc-khoe" },
-  { name: "Giáo dục", href: "/category/giao-duc" },
-  { name: "Du lịch", href: "/category/du-lich" },
-]
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
 
 export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [categories, setCategories] = useState<Category[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  const fetchCategories = async () => {
+    try {
+      setCategoriesLoading(true)
+      const response = await fetch('/api/categories')
+      const data = await response.json()
+      
+      if (data.success && data.data) {
+        setCategories(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    } finally {
+      setCategoriesLoading(false)
+    }
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,18 +77,25 @@ export function Header() {
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-background border border-border shadow-lg min-w-[400px]">
                   <div className="grid gap-1 p-4 md:grid-cols-2 lg:min-w-[500px]">
-                    {categories.map((category) => (
-                      <NavigationMenuLink key={category.name} asChild>
-                        <Link
-                          href={category.href}
-                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                        >
-                          <div className="text-sm font-medium leading-none text-foreground">
-                            {category.name}
-                          </div>
-                        </Link>
-                      </NavigationMenuLink>
-                    ))}
+                    {categoriesLoading ? (
+                      <div className="col-span-2 flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        <span className="ml-2 text-sm text-muted-foreground">Đang tải danh mục...</span>
+                      </div>
+                    ) : (
+                      categories.map((category) => (
+                        <NavigationMenuLink key={category.id} asChild>
+                          <Link
+                            href={`/category/${category.slug}`}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="text-sm font-medium leading-none text-foreground">
+                              {category.name}
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      ))
+                    )}
                   </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
@@ -128,22 +152,29 @@ export function Header() {
                     <h3 className="font-medium" style={{ color: "#1e293b" }}>
                       Danh mục
                     </h3>
-                    {categories.map((category) => (
-                      <Link
-                        key={category.name}
-                        href={category.href}
-                        className="block py-2 text-sm transition-colors"
-                        style={{ color: "#475569" }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = "#164e63"
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = "#475569"
-                        }}
-                      >
-                        {category.name}
-                      </Link>
-                    ))}
+                    {categoriesLoading ? (
+                      <div className="flex items-center py-4">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
+                        <span className="text-sm text-muted-foreground">Đang tải...</span>
+                      </div>
+                    ) : (
+                      categories.map((category) => (
+                        <Link
+                          key={category.id}
+                          href={`/category/${category.slug}`}
+                          className="block py-2 text-sm transition-colors"
+                          style={{ color: "#475569" }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = "#164e63"
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = "#475569"
+                          }}
+                        >
+                          {category.name}
+                        </Link>
+                      ))
+                    )}
                   </div>
                   <div className="pt-4 border-t space-y-2">
                     <Link href="/login" className="block">
