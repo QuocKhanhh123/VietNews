@@ -71,12 +71,6 @@ export function CategoryTabs() {
           ))}
         </TabsList>
 
-        <TabsContent value="all" className="mt-6">
-          <div className="text-center text-muted-foreground py-8">
-            <p>Hiển thị tất cả tin tức trong lưới bên dưới</p>
-          </div>
-        </TabsContent>
-
         {Object.entries(categoryNews).map(([categoryId, news]) => (
           <TabsContent key={categoryId} value={categoryId} className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

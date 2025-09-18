@@ -7,23 +7,26 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 // Types for API response
 interface ArticleData {
-  id: string
+  _id: string
   title: string
-  excerpt: string
-  imageUrl: string
-  category: string
-  author: string
-  publishedAt: string
-  slug: string
+  shortDescription: string
+  content: string
+  coverImageUrl: string
+  publicationDate: string
+  status: string
   views: number
+  tags: string[]
+  slug?: string
+  id?: string
+  excerpt?: string
+  imageUrl?: string
+  category?: string
+  author?: string
+  publishedAt?: string
 }
 
 interface ArticlesApiResponse {
-  articles: ArticleData[]
-  total: number
-  page: number
-  limit: number
-  hasMore: boolean
+  data: ArticleData[]
 }
 
 export function NewsGrid() {
@@ -34,8 +37,20 @@ export function NewsGrid() {
   useEffect(() => {
     fetch('/api/articles')
       .then(res => res.json())
-      .then((data: ArticlesApiResponse) => {
-        setArticles(data.articles || []);
+      .then((response: ArticlesApiResponse) => {
+        console.log('API Response:', response);
+        // Transform data từ MongoDB format sang UI format
+        const transformedArticles = (response.data || []).map(article => ({
+          ...article,
+          id: article._id,
+          excerpt: article.shortDescription || (article.content ? article.content.substring(0, 150) + '...' : ''),
+          imageUrl: article.coverImageUrl || '/placeholder.jpg',
+          category: 'Tin tức', // Có thể join với categories sau
+          author: 'Admin',
+          publishedAt: formatTimeAgo(article.publicationDate),
+          slug: article.slug || article.title?.toLowerCase().replace(/\s+/g, '-') || ''
+        }));
+        setArticles(transformedArticles);
         setLoading(false);
       })
       .catch(error => {
@@ -44,6 +59,25 @@ export function NewsGrid() {
         setLoading(false);
       });
   }, []);
+
+  // Helper function để format time ago
+  const formatTimeAgo = (date: any): string => {
+    if (!date) return 'Chưa rõ';
+    const now = new Date();
+    const publishDate = new Date(date);
+    const diffInMs = now.getTime() - publishDate.getTime();
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInHours < 1) {
+      return 'Vừa xong';
+    } else if (diffInHours < 24) {
+      return `${diffInHours} giờ trước`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays} ngày trước`;
+    } else {
+      return publishDate.toLocaleDateString('vi-VN');
+    }
+  };
 
   if (loading) {
     return (
@@ -93,14 +127,14 @@ export function NewsGrid() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles.map((article, index) => (
           <NewsCard
-            key={article.id}
-            id={article.id}
+            key={article.id || article._id}
+            id={article.id || article._id}
             title={article.title}
-            excerpt={article.excerpt}
-            imageUrl={article.imageUrl}
-            category={article.category}
-            author={article.author}
-            publishedAt={article.publishedAt}
+            excerpt={article.excerpt || ''}
+            imageUrl={article.coverImageUrl || '/placeholder.jpg'}
+            category={article.category || 'Tin tức'}
+            author={article.author || 'Admin'}
+            publishedAt={article.publishedAt || ''}
             featured={index === 0} 
           />
         ))}

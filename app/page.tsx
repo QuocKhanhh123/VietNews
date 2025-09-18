@@ -3,7 +3,6 @@ import { Footer } from "@/components/footer"
 import { NewsGrid } from "@/components/news-grid"
 import { FeaturedNews } from "@/components/featured-news"
 import { CategoryTabs } from "@/components/category-tabs"
-import { TestArticles } from "@/components/test"
 
 export default function HomePage() {
   return (
@@ -25,7 +24,6 @@ export default function HomePage() {
           <NewsGrid />
         </section>
       </main>
-      <TestArticles />
       <Footer />
     </div>
   )
