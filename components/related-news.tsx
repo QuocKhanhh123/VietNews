@@ -18,6 +18,8 @@ interface ArticleData {
   views: number
   tags: string[]
   slug?: string
+  authorName?: string
+  categoryName?: string
 }
 
 export function RelatedNews({ currentNewsId, category }: RelatedNewsProps) {
@@ -88,7 +90,7 @@ export function RelatedNews({ currentNewsId, category }: RelatedNewsProps) {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Tin tức liên quan</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {relatedNews.map((article) => (
           <NewsCard 
             key={article._id}
@@ -96,8 +98,8 @@ export function RelatedNews({ currentNewsId, category }: RelatedNewsProps) {
             title={article.title}
             excerpt={article.shortDescription || ''}
             imageUrl={article.coverImageUrl || '/placeholder.jpg'}
-            category="Tin tức"
-            author="Admin"
+            category={article.categoryName || "Tin tức"}
+            author={article.authorName || "Không rõ"}
             publishedAt={formatTimeAgo(article.publicationDate)}
           />
         ))}

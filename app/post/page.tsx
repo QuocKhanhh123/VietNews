@@ -138,7 +138,7 @@ export default function PostNewsPage() {
     )
   }
 
-  // If user has permission (role = 'user'), show create post interface
+  // If user has permission (user or admin), show create post interface
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -150,7 +150,7 @@ export default function PostNewsPage() {
             <div>
               <CardTitle className="text-2xl font-bold">Đăng tin tức</CardTitle>
               <CardDescription className="text-base">
-                Chào mừng {user.fullname}! Bạn có quyền tạo bài viết.
+                Chào mừng {user.fullname}! Bạn có quyền tạo và quản lý bài viết.
               </CardDescription>
             </div>
           </CardHeader>
@@ -159,7 +159,7 @@ export default function PostNewsPage() {
             <Alert>
               <PenTool className="h-4 w-4" />
               <AlertDescription>
-                Bạn đã đăng nhập với quyền User. Chọn loại bài viết bạn muốn tạo.
+                Bạn có thể tạo bài viết mới và quản lý các bài viết của mình.
               </AlertDescription>
             </Alert>
 
@@ -183,7 +183,7 @@ export default function PostNewsPage() {
 
               <Button 
                 variant="ghost" 
-                className="w-full h-11 justify-between"
+                className="w-full h-11 justify-between bg-transparent"
                 onClick={() => {
                   localStorage.removeItem('user')
                   window.location.href = '/'
@@ -194,11 +194,11 @@ export default function PostNewsPage() {
               </Button>
             </div>
 
-            <div className="text-center">
+            {/* <div className="text-center">
               <Link href="/" className="text-sm text-muted-foreground hover:text-primary">
                 ← Quay về trang chủ
               </Link>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
       </div>

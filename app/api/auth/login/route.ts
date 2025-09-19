@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         message: 'Đăng nhập thành công',
         user: {
           id: user._id?.toString(),
-          fullname: user.fullname,
+          fullname: user.fullName,
           email: user.email,
           role: user.role
         }

@@ -119,14 +119,18 @@ export default function RegisterPage() {
         {/* Back to home */}
         <div className="mb-6">
           <Link href="/">
-            <Button variant="ghost" size="sm" className="text-muted-foreground">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-primary border-primary hover:bg-primary hover:text-white"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Về trang chủ
             </Button>
           </Link>
         </div>
 
-        <Card className="shadow-lg">
+        <Card className="shadow-lg border border-gray-200">
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto h-12 w-12 rounded-full bg-primary flex items-center justify-center">
               <UserPlus className="h-6 w-6 text-primary-foreground" />
@@ -155,7 +159,7 @@ export default function RegisterPage() {
                     value={formData.fullName}
                     onChange={(e) => handleInputChange("fullName", e.target.value)}
                     required
-                    className="h-11"
+                    className="h-11 border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
 
@@ -168,7 +172,7 @@ export default function RegisterPage() {
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     required
-                    className="h-11"
+                    className="h-11 border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
 
@@ -182,7 +186,7 @@ export default function RegisterPage() {
                       value={formData.password}
                       onChange={(e) => handleInputChange("password", e.target.value)}
                       required
-                      className="h-11 pr-10"
+                      className="h-11 pr-10 border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
                     />
                     <Button
                       type="button"
@@ -210,7 +214,7 @@ export default function RegisterPage() {
                       value={formData.confirmPassword}
                       onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                       required
-                      className="h-11 pr-10"
+                      className="h-11 pr-10 border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
                     />
                     <Button
                       type="button"
@@ -229,26 +233,27 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <div className="flex items-start space-x-2">
+              {/* Checkbox điều khoản */}
+              <div className="flex items-start space-x-2 p-2 border rounded-md bg-gray-50">
                 <Checkbox
                   id="terms"
                   checked={formData.agreeTerms}
                   onCheckedChange={(checked) => handleInputChange("agreeTerms", checked as boolean)}
-                  className="mt-1"
+                  className="mt-1 border-primary text-primary focus:ring-primary"
                 />
-                <Label htmlFor="terms" className="text-sm font-normal leading-5">
+                <Label htmlFor="terms" className="text-sm font-medium leading-5">
                   Tôi đồng ý với{" "}
-                  <Link href="/terms" className="text-primary hover:underline">
+                  <span className="text-primary font-semibold hover:underline cursor-pointer">
                     Điều khoản sử dụng
-                  </Link>{" "}
-                  và{" "}
-                  <Link href="/privacy" className="text-primary hover:underline">
-                    Chính sách bảo mật
-                  </Link>
+                  </span>
                 </Label>
               </div>
 
-              <Button type="submit" className="w-full h-11" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full h-11 bg-primary hover:bg-primary/90 text-white shadow-md"
+                disabled={isLoading}
+              >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

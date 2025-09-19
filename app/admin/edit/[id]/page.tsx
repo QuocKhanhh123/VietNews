@@ -8,9 +8,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Save, Eye, Upload, X } from "lucide-react"
+import { ArrowLeft, Save, Eye, Upload, X, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 
 interface Category {
   _id: string
@@ -18,10 +18,28 @@ interface Category {
   slug: string
 }
 
-export default function CreateArticle() {
+interface Article {
+  _id: string
+  title: string
+  slug: string
+  shortDescription: string
+  content: string
+  coverImageUrl: string
+  categoryId: string
+  categoryName: string
+  tags: string[]
+  status: 'published' | 'draft'
+  authorId: string
+}
+
+export default function EditArticle() {
   const router = useRouter()
+  const params = useParams()
+  const articleId = params.id as string
+
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingArticle, setIsLoadingArticle] = useState(true)
   const [error, setError] = useState("")
 
   const [formData, setFormData] = useState({
@@ -29,20 +47,64 @@ export default function CreateArticle() {
     description: "",
     content: "",
     category: "",
+    categoryId: "",
     tags: "",
-    status: "draft",
+    status: "draft" as "draft" | "published",
     featuredImage: "",
   })
 
   const [tagList, setTagList] = useState<string[]>([])
   const [currentTag, setCurrentTag] = useState("")
   const [uploadingImage, setUploadingImage] = useState(false)
-  const [dragActive, setDragActive] = useState(false)
 
-  // Fetch categories from API
+  // Fetch article data and categories
   useEffect(() => {
-    fetchCategories()
-  }, [])
+    if (articleId) {
+      fetchArticleData()
+      fetchCategories()
+    }
+  }, [articleId])
+
+  const fetchArticleData = async () => {
+    setIsLoadingArticle(true)
+    try {
+      const response = await fetch(`/api/articles/${articleId}?admin=true`)
+      const data = await response.json()
+
+      if (data.success) {
+        const article: Article = data.data
+        
+        // Check if current user owns this article
+        const userData = localStorage.getItem('user')
+        if (userData) {
+          const user = JSON.parse(userData)
+          if (user.id !== article.authorId) {
+            setError('Bạn không có quyền chỉnh sửa bài viết này')
+            return
+          }
+        }
+
+        setFormData({
+          title: article.title,
+          description: article.shortDescription,
+          content: article.content,
+          category: article.categoryName,
+          categoryId: article.categoryId,
+          status: article.status,
+          featuredImage: article.coverImageUrl || "",
+          tags: ""
+        })
+        setTagList(article.tags || [])
+      } else {
+        setError(data.error || 'Không thể tải thông tin bài viết')
+      }
+    } catch (error) {
+      console.error('Error fetching article:', error)
+      setError('Có lỗi xảy ra khi tải bài viết')
+    } finally {
+      setIsLoadingArticle(false)
+    }
+  }
 
   const fetchCategories = async () => {
     try {
@@ -60,13 +122,28 @@ export default function CreateArticle() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleImageUpload = async (file: File) => {
+  const handleCategoryChange = (categoryName: string) => {
+    const selectedCategory = categories.find(cat => cat.name === categoryName)
+    if (selectedCategory) {
+      setFormData(prev => ({
+        ...prev,
+        category: categoryName,
+        categoryId: selectedCategory._id
+      }))
+    }
+  }
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Basic validation
     if (!file.type.startsWith('image/')) {
       setError('Vui lòng chọn file ảnh')
       return
     }
 
-    if (file.size > 5 * 1024 * 1024) { 
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
       setError('Kích thước file không được vượt quá 5MB')
       return
     }
@@ -75,9 +152,11 @@ export default function CreateArticle() {
     setError('')
 
     try {
+      // Create FormData for file upload
       const formData = new FormData()
       formData.append('file', file)
 
+      // Upload to our API endpoint
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData
@@ -96,32 +175,6 @@ export default function CreateArticle() {
       setError('Có lỗi xảy ra khi tải ảnh lên')
     } finally {
       setUploadingImage(false)
-    }
-  }
-
-  const handleFileInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    await handleImageUpload(file)
-  }
-
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
-    } else if (e.type === "dragleave") {
-      setDragActive(false)
-    }
-  }
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      await handleImageUpload(e.dataTransfer.files[0])
     }
   }
 
@@ -150,21 +203,8 @@ export default function CreateArticle() {
       setError("Vui lòng nhập nội dung bài viết")
       return
     }
-    if (!formData.category) {
+    if (!formData.categoryId) {
       setError("Vui lòng chọn danh mục")
-      return
-    }
-
-    // Get current user info
-    const userData = localStorage.getItem('user')
-    if (!userData) {
-      setError("Vui lòng đăng nhập để tạo bài viết")
-      return
-    }
-
-    const user = JSON.parse(userData)
-    if (!user.id) {
-      setError("Không tìm thấy thông tin người dùng")
       return
     }
 
@@ -172,8 +212,21 @@ export default function CreateArticle() {
     setError("")
 
     try {
-      const response = await fetch('/api/articles', {
-        method: 'POST',
+      // Get current user for authorization
+      const userData = localStorage.getItem('user')
+      if (!userData) {
+        setError('Không tìm thấy thông tin người dùng')
+        return
+      }
+
+      const user = JSON.parse(userData)
+      if (!user.id) {
+        setError('Không tìm thấy ID người dùng')
+        return
+      }
+
+      const response = await fetch(`/api/articles/${articleId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -181,43 +234,56 @@ export default function CreateArticle() {
           title: formData.title.trim(),
           shortDescription: formData.description.trim(),
           content: formData.content.trim(),
-          category: formData.category,
+          categoryId: formData.categoryId,
           tags: tagList,
           status,
           coverImageUrl: formData.featuredImage || '/placeholder.jpg',
-          authorId: user.id // Gửi ID của user hiện tại
+          authorId: user.id
         }),
       })
 
       const data = await response.json()
 
       if (data.success) {
-        // Success - redirect to admin page or article view
-        router.push('/admin')
+        // Success - redirect to admin articles page
+        router.push('/admin/articles')
       } else {
-        setError(data.error || 'Có lỗi xảy ra khi tạo bài viết')
+        setError(data.error || 'Có lỗi xảy ra khi cập nhật bài viết')
       }
     } catch (error) {
-      console.error('Error creating article:', error)
+      console.error('Error updating article:', error)
       setError('Có lỗi xảy ra. Vui lòng thử lại.')
     } finally {
       setIsLoading(false)
     }
   }
 
+  if (isLoadingArticle) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Đang tải thông tin bài viết...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/admin">
+        <Link href="/admin/articles">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Quay lại
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Tạo bài viết mới</h1>
-          <p className="text-muted-foreground mt-1">Soạn thảo và xuất bản tin tức</p>
+          <h1 className="text-3xl font-bold text-foreground">Chỉnh sửa bài viết</h1>
+          <p className="text-muted-foreground mt-1">Cập nhật nội dung bài viết</p>
           {error && (
             <div className="bg-destructive/15 text-destructive px-4 py-2 rounded-lg mt-2">
               {error}
@@ -232,7 +298,7 @@ export default function CreateArticle() {
           <Card>
             <CardHeader>
               <CardTitle>Nội dung bài viết</CardTitle>
-              <CardDescription>Nhập tiêu đề, mô tả và nội dung chính của bài viết</CardDescription>
+              <CardDescription>Chỉnh sửa tiêu đề, mô tả và nội dung chính của bài viết</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -285,10 +351,6 @@ export default function CreateArticle() {
                       src={formData.featuredImage} 
                       alt="Preview" 
                       className="w-full h-48 object-cover rounded-lg border"
-                      onError={() => {
-                        setError('Không thể tải ảnh preview')
-                        setFormData(prev => ({ ...prev, featuredImage: '' }))
-                      }}
                     />
                     <Button
                       variant="destructive"
@@ -299,38 +361,18 @@ export default function CreateArticle() {
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    onClick={() => document.getElementById('image-upload')?.click()}
-                    disabled={uploadingImage}
-                  >
-                    {uploadingImage ? 'Đang tải...' : 'Thay đổi ảnh'}
+                  <Button variant="outline" className="w-full" onClick={() => document.getElementById('image-upload')?.click()}>
+                    Thay đổi ảnh
                   </Button>
                 </div>
               ) : (
                 <div 
-                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                    dragActive 
-                      ? 'border-primary bg-primary/5' 
-                      : 'border-border hover:border-primary/50'
-                  }`}
+                  className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
                   onClick={() => document.getElementById('image-upload')?.click()}
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
                 >
-                  <Upload className={`h-12 w-12 mx-auto mb-4 ${
-                    dragActive ? 'text-primary' : 'text-muted-foreground'
-                  }`} />
+                  <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground mb-4">
-                    {uploadingImage 
-                      ? 'Đang tải ảnh...' 
-                      : dragActive 
-                        ? 'Thả ảnh vào đây' 
-                        : 'Kéo thả ảnh vào đây hoặc click để chọn file'
-                    }
+                    {uploadingImage ? 'Đang tải ảnh...' : 'Kéo thả ảnh vào đây hoặc click để chọn file'}
                   </p>
                   <Button variant="outline" disabled={uploadingImage}>
                     {uploadingImage ? 'Đang tải...' : 'Chọn ảnh'}
@@ -341,13 +383,10 @@ export default function CreateArticle() {
                 id="image-upload"
                 type="file"
                 accept="image/*"
-                onChange={handleFileInputChange}
+                onChange={handleImageUpload}
                 className="hidden"
                 disabled={uploadingImage}
               />
-              <div className="mt-2 text-xs text-muted-foreground">
-                Hỗ trợ: JPG, PNG, GIF, WebP. Tối đa 5MB.
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -357,8 +396,8 @@ export default function CreateArticle() {
           {/* Publish Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Xuất bản</CardTitle>
-              <CardDescription>Cài đặt trạng thái và thời gian xuất bản</CardDescription>
+              <CardTitle>Cập nhật</CardTitle>
+              <CardDescription>Lưu thay đổi hoặc cập nhật trạng thái</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
@@ -376,13 +415,27 @@ export default function CreateArticle() {
                   className="flex-1"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Đang xuất bản..." : "Xuất bản"}
+                  {isLoading ? "Đang cập nhật..." : "Cập nhật"}
                 </Button>
               </div>
-              <Button variant="ghost" className="w-full" disabled={isLoading}>
-                <Eye className="h-4 w-4 mr-2" />
-                Xem trước
-              </Button>
+              <Link href={`/news/${articleId}`}>
+                <Button variant="ghost" className="w-full" disabled={isLoading}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Xem bài viết
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Current Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Trạng thái hiện tại</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Badge variant={formData.status === 'published' ? 'default' : 'secondary'}>
+                {formData.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+              </Badge>
             </CardContent>
           </Card>
 
@@ -393,7 +446,7 @@ export default function CreateArticle() {
               <CardDescription>Chọn danh mục phù hợp cho bài viết</CardDescription>
             </CardHeader>
             <CardContent>
-              <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
+              <Select value={formData.category} onValueChange={handleCategoryChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn danh mục" />
                 </SelectTrigger>

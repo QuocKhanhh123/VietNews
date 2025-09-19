@@ -51,7 +51,7 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify(data.user))
         
         // Redirect dựa trên role
-        if (data.user.role === 'user') {
+        if (data.user.role === 'user' || data.user.role === 'admin') {
           window.location.href = '/post'
         } else {
           window.location.href = '/'
