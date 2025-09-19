@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type || !file.type.startsWith('image/')) {
       return NextResponse.json({ 
         success: false,
         error: 'File phải là định dạng ảnh' 
@@ -28,6 +28,15 @@ export async function POST(request: NextRequest) {
         success: false,
         error: 'Kích thước file không được vượt quá 5MB' 
       }, { status: 400 });
+    }
+
+    // For Vercel deployment, we can't write to file system
+    // This is a temporary solution - in production you should use cloud storage
+    if (process.env.VERCEL) {
+      return NextResponse.json({ 
+        success: false,
+        error: 'Upload ảnh chưa được hỗ trợ trên Vercel. Vui lòng sử dụng URL ảnh trực tiếp.' 
+      }, { status: 501 });
     }
 
     // Generate unique filename
