@@ -11,8 +11,6 @@ export async function GET() {
       .sort({ name: 1 })
       .toArray();
 
-    console.log('Categories found:', categories.length);
-
     // Transform data cho frontend
     const transformedCategories = categories.map(category => ({
       id: category._id.toString(),

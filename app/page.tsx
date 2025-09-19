@@ -15,9 +15,9 @@ export default function HomePage() {
         </section>
 
         {/* Category Tabs */}
-        <section className="container mx-auto px-4">
+        {/* <section className="container mx-auto px-4">
           <CategoryTabs />
-        </section>
+        </section> */}
 
         {/* News Grid */}
         <section className="container mx-auto px-4 py-8">

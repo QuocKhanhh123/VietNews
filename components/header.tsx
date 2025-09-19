@@ -4,9 +4,9 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Search, Menu, User, PenTool, Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Menu, User, PenTool, Loader2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -24,8 +24,7 @@ interface Category {
 }
 
 export function Header() {
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
+  const router = useRouter()
   const [categories, setCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
 
@@ -49,10 +48,12 @@ export function Header() {
     }
   }
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`
+  const handleCategoryFilter = (categorySlug: string) => {
+    if (categorySlug === 'all') {
+      router.push('/')
+    } else {
+      // Chuyển đến trang category
+      router.push(`/category/${categorySlug}`)
     }
   }
 
@@ -77,6 +78,22 @@ export function Header() {
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-background border border-border shadow-lg min-w-[400px]">
                   <div className="grid gap-1 p-4 md:grid-cols-2 lg:min-w-[500px]">
+                    {/* Quick Actions */}
+                    <div className="col-span-2 border-b pb-4 mb-4">
+                      <NavigationMenuLink asChild>
+                        <button
+                          onClick={() => handleCategoryFilter('all')}
+                          className="w-full text-left block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground bg-primary/5"
+                        >
+                          <div className="text-sm font-medium leading-none text-foreground flex items-center">
+                            📰 Tất cả tin tức
+                          </div>
+                          <div className="text-xs text-muted-foreground">Xem tất cả bài viết</div>
+                        </button>
+                      </NavigationMenuLink>
+                    </div>
+                    
+                    {/* Categories */}
                     {categoriesLoading ? (
                       <div className="col-span-2 flex items-center justify-center py-8">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -85,14 +102,15 @@ export function Header() {
                     ) : (
                       categories.map((category) => (
                         <NavigationMenuLink key={category.id} asChild>
-                          <Link
-                            href={`/category/${category.slug}`}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          <button
+                            onClick={() => handleCategoryFilter(category.slug)}
+                            className="w-full text-left select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
                             <div className="text-sm font-medium leading-none text-foreground">
                               {category.name}
                             </div>
-                          </Link>
+                            <div className="text-xs text-muted-foreground">Xem tin tức {category.name.toLowerCase()}</div>
+                          </button>
                         </NavigationMenuLink>
                       ))
                     )}
@@ -102,26 +120,18 @@ export function Header() {
             </NavigationMenuList>
           </NavigationMenu>
 
-          {/* Search and Actions */}
+          {/* Search Link */}
+          <div className="hidden md:flex items-center">
+            <Link href="/search">
+              <Button variant="ghost" size="sm" className="flex items-center">
+                <Search className="h-4 w-4 mr-2" />
+                Tìm kiếm tin tức
+              </Button>
+            </Link>
+          </div>
+
+          {/* Actions */}
           <div className="flex items-center space-x-2">
-            {/* Search */}
-            <div className="hidden md:flex items-center space-x-2">
-              <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Tìm kiếm tin tức..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 w-64"
-                />
-              </form>
-            </div>
-
-            {/* Mobile Search Toggle */}
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSearchOpen(!isSearchOpen)}>
-              <Search className="h-4 w-4" />
-            </Button>
-
             {/* Auth Buttons */}
             <Link href="/login">
               <Button variant="ghost" size="sm" className="hidden sm:flex">
@@ -148,10 +158,35 @@ export function Header() {
                   <SheetTitle style={{ color: "#1e293b" }}>Menu</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6 space-y-4">
+                  {/* Mobile Search Link */}
                   <div className="space-y-2">
+                    <Link href="/search" className="block">
+                      <Button variant="ghost" className="w-full justify-start" style={{ color: "#1e293b" }}>
+                        <Search className="h-4 w-4 mr-2" />
+                        Tìm kiếm tin tức
+                      </Button>
+                    </Link>
+                  </div>
+                  
+                  <div className="space-y-2 pt-4 border-t">
                     <h3 className="font-medium" style={{ color: "#1e293b" }}>
                       Danh mục
                     </h3>
+                    <button
+                      onClick={() => handleCategoryFilter('all')}
+                      className="block w-full text-left py-2 text-sm transition-colors rounded px-2"
+                      style={{ color: "#475569" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#f1f5f9"
+                        e.currentTarget.style.color = "#164e63"
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent"
+                        e.currentTarget.style.color = "#475569"
+                      }}
+                    >
+                      📰 Tất cả tin tức
+                    </button>
                     {categoriesLoading ? (
                       <div className="flex items-center py-4">
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
@@ -159,20 +194,22 @@ export function Header() {
                       </div>
                     ) : (
                       categories.map((category) => (
-                        <Link
+                        <button
                           key={category.id}
-                          href={`/category/${category.slug}`}
-                          className="block py-2 text-sm transition-colors"
+                          onClick={() => handleCategoryFilter(category.slug)}
+                          className="block w-full text-left py-2 text-sm transition-colors rounded px-2"
                           style={{ color: "#475569" }}
                           onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#f1f5f9"
                             e.currentTarget.style.color = "#164e63"
                           }}
                           onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "transparent"
                             e.currentTarget.style.color = "#475569"
                           }}
                         >
-                          {category.name}
-                        </Link>
+                          � {category.name}
+                        </button>
                       ))
                     )}
                   </div>
@@ -195,21 +232,6 @@ export function Header() {
             </Sheet>
           </div>
         </div>
-
-        {/* Mobile Search */}
-        {isSearchOpen && (
-          <div className="md:hidden py-4 border-t">
-            <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Tìm kiếm tin tức..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
-              />
-            </form>
-          </div>
-        )}
       </div>
     </header>
   )

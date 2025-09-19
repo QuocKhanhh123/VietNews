@@ -181,12 +181,6 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Demo credentials */}
-            <div className="mt-6 p-4 bg-muted rounded-lg">
-              <p className="text-xs text-muted-foreground mb-2 font-medium">Tài khoản demo:</p>
-              <p className="text-xs text-muted-foreground">Email: admin@vietnews.com</p>
-              <p className="text-xs text-muted-foreground">Mật khẩu: admin123</p>
-            </div>
           </CardContent>
         </Card>
       </div>
