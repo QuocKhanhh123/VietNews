@@ -14,11 +14,6 @@ export default function HomePage() {
           <FeaturedNews />
         </section>
 
-        {/* Category Tabs */}
-        {/* <section className="container mx-auto px-4">
-          <CategoryTabs />
-        </section> */}
-
         {/* News Grid */}
         <section className="container mx-auto px-4 py-8">
           <NewsGrid />

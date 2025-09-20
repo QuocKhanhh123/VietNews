@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { NewsCard } from "@/components/news-card"
-import { Loader2, AlertCircle } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Skeleton } from "@/components/ui/skeleton"
 
 // Types for API response
 interface ArticleData {
@@ -112,10 +113,41 @@ export function NewsGrid() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Đang tải tin tức...</span>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48 bg-blue-100" />
+          <Skeleton className="h-4 w-32 bg-blue-100" />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 9 }).map((_, index) => (
+            <div key={index} className="space-y-4">
+              {/* Image skeleton */}
+              <Skeleton className="h-48 w-full rounded-lg bg-blue-100" />
+              
+              {/* Category badge skeleton */}
+              <Skeleton className="h-5 w-20 bg-blue-100" />
+              
+              {/* Title skeleton */}
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-full bg-blue-100" />
+                <Skeleton className="h-6 w-3/4 bg-blue-100" />
+              </div>
+              
+              {/* Excerpt skeleton */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full bg-blue-100" />
+                <Skeleton className="h-4 w-full bg-blue-100" />
+                <Skeleton className="h-4 w-2/3 bg-blue-100" />
+              </div>
+              
+              {/* Meta info skeleton */}
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-24 bg-blue-100" />
+                <Skeleton className="h-4 w-20 bg-blue-100" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     )

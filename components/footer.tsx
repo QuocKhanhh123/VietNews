@@ -100,22 +100,22 @@ export function Footer() {
             <div className="space-y-2 text-sm">
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">123 Đường ABC, Quận 1, TP.HCM</span>
+                <span className="text-muted-foreground">03 Quang Trung, Hải Châu, Đà Nẵng</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">+84 123 456 789</span>
+                <span className="text-muted-foreground">+84 84 636 648</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">contact@vietnews.com</span>
+                <span className="text-muted-foreground">nguyenlannhi@vietnews.com</span>
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 VietNews. Tất cả quyền được bảo lưu.</p>
+          <p>&copy; 2025 VietNews. Tất cả quyền được bảo lưu.</p>
         </div>
       </div>
     </footer>

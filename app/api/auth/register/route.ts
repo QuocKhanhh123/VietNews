@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     // Create new user
     const newUser: Omit<User, '_id'> = {
-      fullname,
+      fullName: fullname,
       email,
       passwordHash,
       role: 'user', // Mặc định là user, có thể tạo bài viết

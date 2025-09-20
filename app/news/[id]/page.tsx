@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { notFound, useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { Clock, User, Bookmark, Eye, ArrowLeft, AlertCircle, Loader2 } from "lucide-react"
+import { Clock, User, Bookmark, Eye, ArrowLeft, AlertCircle } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { RelatedNews } from "@/components/related-news"
 import { ShareButtons } from "@/components/share-buttons"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface ArticleDetail {
   id: string
@@ -109,14 +110,111 @@ export default function NewsDetailPage({ params }: NewsDetailPageProps) {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex items-center justify-center py-20">
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-6 w-6 animate-spin" />
-                <span>Đang tải bài viết...</span>
+          <div className="container mx-auto px-4 py-8 max-w-4xl">
+            {/* Breadcrumb skeleton */}
+            <div className="mb-6">
+              <Skeleton className="h-4 w-32 bg-blue-100" />
+            </div>
+
+            {/* Article Header skeleton */}
+            <div className="mb-8">
+              {/* Category badge skeleton */}
+              <div className="mb-4">
+                <Skeleton className="h-6 w-20 bg-blue-100 rounded-full" />
+              </div>
+
+              {/* Title skeleton */}
+              <div className="mb-6 space-y-3">
+                <Skeleton className="h-10 w-full bg-blue-100" />
+                <Skeleton className="h-10 w-4/5 bg-blue-100" />
+              </div>
+
+              {/* Excerpt skeleton */}
+              <div className="mb-6 space-y-2">
+                <Skeleton className="h-5 w-full bg-blue-100" />
+                <Skeleton className="h-5 w-full bg-blue-100" />
+                <Skeleton className="h-5 w-3/4 bg-blue-100" />
+              </div>
+
+              {/* Meta info skeleton */}
+              <div className="flex flex-wrap gap-4 mb-6">
+                <Skeleton className="h-4 w-24 bg-blue-100" />
+                <Skeleton className="h-4 w-32 bg-blue-100" />
+                <Skeleton className="h-4 w-20 bg-blue-100" />
+                <Skeleton className="h-4 w-16 bg-blue-100" />
+              </div>
+
+              {/* Action buttons skeleton */}
+              <div className="flex gap-2 mb-6">
+                <Skeleton className="h-9 w-24 bg-blue-100" />
+                <Skeleton className="h-9 w-28 bg-blue-100" />
+              </div>
+
+              <Separator />
+            </div>
+
+            {/* Featured Image skeleton */}
+            <div className="mb-8">
+              <Skeleton className="aspect-video w-full rounded-lg bg-blue-100" />
+            </div>
+
+            {/* Content skeleton */}
+            <div className="mb-8 space-y-4">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <Skeleton key={index} className="h-4 w-full bg-blue-100" />
+              ))}
+              <Skeleton className="h-4 w-3/4 bg-blue-100" />
+            </div>
+
+            {/* Tags skeleton */}
+            <div className="mb-8">
+              <Skeleton className="h-4 w-16 mb-3 bg-blue-100" />
+              <div className="flex gap-2">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} className="h-6 w-16 bg-blue-100 rounded-full" />
+                ))}
+              </div>
+            </div>
+
+            {/* Footer skeleton */}
+            <div className="border-t pt-6 mb-8">
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-32 bg-blue-100" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-8 bg-blue-100 rounded" />
+                  <Skeleton className="h-8 w-8 bg-blue-100 rounded" />
+                  <Skeleton className="h-8 w-8 bg-blue-100 rounded" />
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Related News skeleton */}
+          <section className="container mx-auto px-4 py-8 max-w-6xl">
+            <div className="space-y-6">
+              <Skeleton className="h-8 w-48 bg-blue-100" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="space-y-4">
+                    <Skeleton className="h-48 w-full rounded-lg bg-blue-100" />
+                    <Skeleton className="h-5 w-20 bg-blue-100" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-6 w-full bg-blue-100" />
+                      <Skeleton className="h-6 w-3/4 bg-blue-100" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full bg-blue-100" />
+                      <Skeleton className="h-4 w-2/3 bg-blue-100" />
+                    </div>
+                    <div className="flex justify-between">
+                      <Skeleton className="h-4 w-24 bg-blue-100" />
+                      <Skeleton className="h-4 w-20 bg-blue-100" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
         </main>
         <Footer />
       </div>
