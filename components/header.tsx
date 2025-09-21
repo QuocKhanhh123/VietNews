@@ -183,6 +183,15 @@ export function Header() {
                         Tìm kiếm tin tức
                       </Button>
                     </Link>
+                    <Link href="/about" className="block">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        style={{ color: "#1e293b" }}
+                      >
+                        Giới thiệu
+                      </Button>
+                    </Link>
                   </div>
 
                   <div className="space-y-2 pt-4 border-t">
